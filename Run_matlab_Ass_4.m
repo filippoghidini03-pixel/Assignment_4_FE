@@ -1,0 +1,76 @@
+clear all
+close all
+clc
+
+%% Part 1
+% Initialize parameters
+params = initCertificateParams();
+
+% Calculate the synthetic forward price and volatility of the basket
+[F_basket, sigma_basket] = calculateBasket(params);
+
+% Calculate the Upfront X% using the bond component and blkprice
+%DF_T = exp(-params.r * params.T);
+%manca un pezzo
+DF_T = params.DF_T ;
+BondPart = (1 - params.P) * DF_T;
+% Call
+[callPrice, ~] = blkprice(F_basket, params.P, params.r, params.T, sigma_basket);
+
+% The option component is the participation multiplied by the call price
+OptionPart = params.participation * callPrice;
+
+% The Upfront X is the remainder of the 100% principal after hedging costs
+%da modificare 1 e bond part positiva
+Upfront_X = (1 - BondPart - OptionPart) * 100;
+
+fprintf('The calculated Upfront X is: %.4f%%\n', Upfront_X);
+%% Part 2
+% Load the data and obtain the reference date
+[Dataset, ~, ref_date] = getMarketDataStructs('MktData_CurveBootstrap.xls');
+
+% 2008 is a leap year, so T=1 year is 366 days forward
+target_date = ref_date + 366; 
+
+% Compute the discount factor 
+yf_discount = yearfrac(ref_date, target_date, 3); 
+DF = exp(-params.r * yf_discount);
+
+fprintf('Bootstrapped 1-Year Zero Rate: %.4f%%\n', params.r * 100);
+fprintf('Calculated 1-Year Discount Factor: %.6f\n\n', DF);
+
+% Option Pricing
+load('eurostoxx_Poli.mat');
+
+% Parameters
+F0 = cSelect.reference;
+K_vec = cSelect.strikes;
+sigma_vec = cSelect.surface;
+Notional = 10000000; Payoff_Pct = 0.05; T = 1.0;
+
+% Smile
+[P_Black, P_Smile] = priceDigitalWithSmile(F0, K_vec, sigma_vec, DF, T, Notional, Payoff_Pct);
+
+% Plotting
+plotDigitalPrices(K_vec, P_Black, P_Smile, P_Smile - P_Black);
+%% Part 3
+
+% Model Parameters
+p_plus = 1.5;
+p_minus = 0.9;
+x_grid = [-0.05223, 0, 0.15]; 
+
+% Martingale condition: Calculate drift mu analytically to avoid rounding
+mu = log((1 - 1/p_plus) * (1 + 1/p_minus));
+
+fprintf('--- Model Parameters ---\n');
+fprintf('p+ = %.1f, p- = %.1f, mu = %.6f\n\n', p_plus, p_minus, mu);
+
+% Execute Methodologies
+[C_quad, C_res, C_mc] = executePricingMethods(x_grid, F0, DF, p_plus, p_minus, mu);
+
+% FFT (Computed globally for a grid of log-moneyness x)
+ M = 12;
+ dz = 0.1; 
+[C_fft_interp, x_fft, C_fft] = executeFFTMethod(x_grid, F0, DF, p_plus, p_minus, mu, M, dz);
+%% Part 4
