@@ -25,7 +25,7 @@ function C = compute2_MonteCarlo(TTM, nu, sigma, s, DF, F0, moneyness)
     N_sim = 1e6;
 
     % --- Derive S0 and K from inputs ---
-    S0 = F0 * (1/DF);
+    S0 = F0 * DF;
     K  = F0 * exp(-moneyness);      % from moneyness = ln(F0/K)
 
     % --- Compute the log-Laplace correction term ---
