@@ -9,7 +9,8 @@ function C = compute2_Quadrature(F0, DF, x, phi_u)
     %   C          - Call option price
 
     % We integrate from 0 to infinity and take the real part multiplied by 1/pi
-    f = @(u)exp(-1i * u * x) .* phi_u ./ (u.^2 + 0.25);
+    % Evaluate phi_u at the Lewis contour shift: (-u - 1i/2)
+    f = @(u) real(exp(-1i .* u .* x) .* phi_u(-u - 1i/2) ./ (u.^2 + 0.25));
     
     integral_val = (1/pi) * integral(f, 0, inf, 'RelTol', 1e-8, 'AbsTol', 1e-12);
 

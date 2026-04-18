@@ -24,8 +24,8 @@ function C = compute2_MonteCarlo(TTM, nu, sigma, s, DF, F0, moneyness)
 
     N_sim = 1e6;
 
-    % --- Derive S0 and K from inputs ---
-    S0 = F0 * DF;
+    % --- Derive K from inputs ---
+    
     K  = F0 * exp(-moneyness);      % from moneyness = ln(F0/K)
 
     % --- Compute the log-Laplace correction term ---
@@ -58,7 +58,7 @@ function C = compute2_MonteCarlo(TTM, nu, sigma, s, DF, F0, moneyness)
         - lnL;
 
     % --- Derive terminal stock prices ---
-    ST = S0 * exp(X);
+    ST = F0 * exp(X);
 
     % --- Compute discounted call payoff ---
     payoffs = max(ST - K, 0);
