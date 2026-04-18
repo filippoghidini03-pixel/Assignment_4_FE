@@ -74,3 +74,23 @@ fprintf('p+ = %.1f, p- = %.1f, mu = %.6f\n\n', p_plus, p_minus, mu);
  dz = 0.1; 
 [C_fft_interp, x_fft, C_fft] = executeFFTMethod(x_grid, F0, DF, p_plus, p_minus, mu, M, dz);
 %% Part 4
+
+%% Part 5
+
+%COMMENT:
+% 1) Compute Call Prices using FFT, which requires:
+%    i) Computing the characteristic function of the model
+%    ii) Computing the integrand of Lewis formula
+%    iii) FFT to compute the final price
+%
+% 2) OLS: we calibrate the model param (k, sigma, n)
+%
+% 3) Model Implied Vol via OLS on Black formula
+%
+% 4) Compare it with Market Data implied vol
+
+%Loading Data
+load('eurostoxx_Poli.mat');
+F0 = cSelect.reference;
+K_vec = cSelect.strikes; sigma_vec = cSelect.surface; T = 1.0;
+alpha = 2/3;

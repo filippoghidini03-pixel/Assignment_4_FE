@@ -1,0 +1,69 @@
+function [opt_params, SSE] = Calibrate_NVM_model(mkt_strikes, mkt_prices, F0, B, dt, alpha, M, x1, z1, dz)
+% CALIBRATE_NVM_MODEL Calibrates the NVM model to market prices using fmincon.
+%
+% Returns:
+%   opt_params : Array containing the optimal [sigma, k, eta]
+%   SSE        : The final Sum of Squared Errors
+
+% Pre-compute Grid & Market Variables
+mkt_log_mon = log(F0 ./ mkt_strikes);
+    
+N  = 2^M;
+dx = (2*pi) / (N * dz);
+
+% Optimization Setup
+p0 = [0.20, 1.0, -0.1];  % Initial guess: [sigma, k, eta]
+lb = [1e-4, 1e-4, -Inf]; % Lower bounds
+ub = [5.0, 10.0, Inf];   % Upper bounds
+
+options = optimoptions('fmincon', ...
+        'Algorithm', 'sqp', ... 
+        'Display', 'iter', ...
+        'StepTolerance', 1e-6);
+
+% Run Optimization
+disp('Starting Constrained Calibration (fmincon)...');
+
+% COMMENT: the [] empty is because they are the input for linear
+% inequalitites/equalities (linear constraints), which here are not present
+% due to the nature of the problem
+[opt_params, SSE] = fmincon(@objective_fn, p0, [], [], [], [], lb, ub, @constraint_fn, options);
+
+   
+% Helper Functions
+
+function error_val = objective_fn(p)
+    % Extract guesses
+    sigma_guess = p(1);
+    k_guess     = p(2);
+    eta_guess   = p(3);
+    
+    % Build Characteristic Function
+    phi = Levy_Model_Char_Func(alpha, sigma_guess, k_guess, eta_guess, dt);
+    
+    % Price via FFT
+    [fft_prices, fft_x_grid, ~] = Lewis_FFT_pricer(phi, F0, B, M, dz, x1, z1);
+    
+    % Interpolate and compute error
+    % COMMENT: we built a fft pricing, but not every computed vaues will be
+    % computed on 
+    model_prices = interp1(fft_x_grid, fft_prices, mkt_log_mon, 'spline');
+    error_val = sum((model_prices - mkt_prices).^2);
+end
+
+function [c, ceq] = constraint_fn(p)
+    sigma_guess = p(1);
+    k_guess     = p(2);
+    eta_guess   = p(3);
+    
+    % Dynamic boundary condition: eta >= -(1-alpha)/(k*sigma^2)
+    omega_bar = (1 - alpha) / (k_guess * sigma_guess^2);
+    
+    % Inequality constraint: c(p) <= 0
+    % COMMENT: not that deep, it is just how to implement the dynamic (in
+    % the sense that it depends on the other tested params) constraint on
+    % eta to have a well defined integral (analytic strip, ...)
+    c = -eta_guess - omega_bar;
+    ceq = []; 
+end
+end
