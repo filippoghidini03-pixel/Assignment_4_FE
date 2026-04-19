@@ -7,7 +7,7 @@ integrand = @(xi) phi(-xi - 0.5i) ./ (2 * pi .* (xi.^2 + 0.25));
 [vals, x_grid, z_grid] = FFT_Engine(integrand, dz, x1, z1, M);
 
 % COMMENT: real part taken just to avoid rounding errors made by the pc
-% which could give in output an imaginary part
-call_prices = B .* F0 .* (1 - exp(-z_grid ./ 2) .* real(vals));
+% which could give in output an imaginary part MODIFIED: x_grid instead of z_grid
+call_prices = B .* F0 .* (1 - exp(-x_grid ./ 2) .* real(vals));
 
 end

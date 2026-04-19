@@ -72,7 +72,16 @@ parameters = [p_plus, p_minus, mu];
 % FFT (Computed globally for a grid of log-moneyness x)
  M = 12;
  dz = 0.1; 
-[C_fft_interp, x_fft, C_fft] = executeFFTMethod(x_grid, F0, DF, p_plus, p_minus, mu, M, dz);
+%[C_fft_interp, x_fft, C_fft] = executeFFTMethod(x_grid, F0, DF, p_plus, p_minus, mu, M, dz);
+z1= -(2^M-1)*dz/2;
+dx=2*pi/(2^M*dz);
+x1= -(2^M-1)*dx/2;
+phi = ChFuncEx3( p_plus, p_minus, mu);
+[C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz, x1, z1);
+C_fft_interp = interp1(x_fft, C_fft, x_grid, 'spline');
+for i = 1:length(x_grid)
+    fprintf('FFT Price at x = %7.2f%%: %8.4f\n', x_grid(i)*100, C_fft_interp(i));
+end
 %% Part 4
 %Model parameters
 x_grid = -0.25:0.01:0.25;
@@ -82,7 +91,9 @@ k = 1;
 eta = 3;
 dt = 1;
 parameters = [alpha, sigma, k, eta, dt];
-[C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters);
+[C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters)
+
+[C_fft, x_grid, z_grid] = Lewis_FFT_pricer(phi, F0, B, M, dz, x1, z1)
 %% Part 5
 
 %COMMENT:
