@@ -1,4 +1,4 @@
-function [opt_params, SSE] = Calibrate_NVM_model(mkt_strikes, mkt_prices, F0, B, dt, alpha, M, x1, z1, dz)
+function [opt_params, SSE] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, x1, z1, dz)
 % CALIBRATE_NVM_MODEL Calibrates the NVM model to market prices using fmincon.
 %
 % Returns:
@@ -49,7 +49,9 @@ phi = Levy_Model_Char_Func(alpha, sigma_guess, k_guess, eta_guess, dt);
 % computed on existing strike prices K!!! So we need to interpolate to
 % then calibrate the model on real mrk data!
 model_prices = interp1(fft_x_grid, fft_prices, mkt_log_mon, 'spline');
-error_val = sum((model_prices - mkt_prices).^2);
+
+model_implied_vol = blkimpv(F0, mkt_K, 0, T, model_prices / B);
+error_val = sum((model_implied_vol - mkt_implied_vol).^2);
 end
 
 function [c, ceq] = constraint_fn(p)
