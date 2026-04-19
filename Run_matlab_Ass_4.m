@@ -65,9 +65,9 @@ mu = log((1 - 1/p_plus) * (1 + 1/p_minus));
 
 fprintf('--- Model Parameters ---\n');
 fprintf('p+ = %.1f, p- = %.1f, mu = %.6f\n\n', p_plus, p_minus, mu);
-
+parameters = [p_plus, p_minus, mu];
 % Execute Methodologies
-[C_quad, C_res, C_mc] = executePricingMethods(x_grid, F0, DF, p_plus, p_minus, mu);
+[C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters);
 
 % FFT (Computed globally for a grid of log-moneyness x)
  M = 12;

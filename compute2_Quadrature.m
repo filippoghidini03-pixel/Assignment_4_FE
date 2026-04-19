@@ -1,4 +1,4 @@
-function C = compute2_Quadrature(F0, DF, x, phi_u)
+function C = compute2_Quadrature(x, F0, DF, phi_u)
     % COMPUTE2_QUADRATURE Prices the call option using numerical integration.
     % IMPUTS:
     %   F0         - Forward price
