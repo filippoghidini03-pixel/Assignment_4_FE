@@ -1,4 +1,4 @@
-function C = compute2_MonteCarlo(TTM, nu, sigma, s, DF, F0, moneyness)
+function C = compute2_MonteCarlo(moneyness, F0, DF, alpha, sigma, s, nu, TTM)
     % COMPUTE2_MONTECARLO Prices a European call option via Monte Carlo
     % simulation assuming log-returns driven by a Normal Inverse Gaussian
     % (NIG)-like model.

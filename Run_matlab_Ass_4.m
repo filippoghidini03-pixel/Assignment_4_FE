@@ -74,7 +74,15 @@ parameters = [p_plus, p_minus, mu];
  dz = 0.1; 
 [C_fft_interp, x_fft, C_fft] = executeFFTMethod(x_grid, F0, DF, p_plus, p_minus, mu, M, dz);
 %% Part 4
-
+%Model parameters
+x_grid = -0.25:0.01:0.25;
+alpha = 1/2;
+sigma = 0.2;
+k = 1;
+eta = 3;
+dt = 1;
+parameters = [alpha, sigma, k, eta, dt];
+[C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters);
 %% Part 5
 
 %COMMENT:

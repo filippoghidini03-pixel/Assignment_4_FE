@@ -43,16 +43,21 @@ if length(parameters) == 5
     phi = Levy_Model_Char_Func(alpha, sigma, k, eta, dt);
     for i = 1:N
         x = x_grid(i);
-        K = F0 * exp(-x);
-        fprintf('--- Pricing for Moneyness x = %.2f%% (Strike K = %.2f) ---\n', x*100, K);
         C_quad(i) = compute2_Quadrature(x, F0, DF, phi);
-        fprintf('a. Quadrature Price:  %.4f\n', C_quad(i));
-        
         C_MC(i) = compute2_MonteCarlo(x, F0, DF, alpha, sigma, k, eta, dt);
-        fprintf('c. Monte Carlo Price: %.4f\n', C_MC(i));
-        
-        fprintf('\n');
     end
+    
+    % Plot the prices
+    figure;
+    plot(x_grid, C_quad, '-o', 'LineWidth', 1.5, 'MarkerSize', 8);
+    hold on;
+    plot(x_grid, C_MC, '-x', 'LineWidth', 1.5, 'MarkerSize', 8);
+    hold off;
+    grid on;
+    xlabel('Log-Moneyness (x = ln(F_0 / K))');
+    ylabel('Call Option Price');
+    title('NIG Model Prices (Quadrature vs Monte Carlo)');
+    legend('Quadrature', 'Monte Carlo', 'Location', 'best');
 end
 
 
