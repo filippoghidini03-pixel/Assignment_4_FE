@@ -1,4 +1,4 @@
-function [opt_params, SSE] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, x1, z1, dz)
+function [opt_params, SSE, model_implied_vol] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, x1, z1, dz)
 % CALIBRATE_NVM_MODEL Calibrates the NVM model to market prices using fmincon.
 %
 % Returns:
@@ -29,7 +29,12 @@ disp('Starting Constrained Calibration (fmincon)...');
 % due to the nature of the problem
 [opt_params, SSE] = fmincon(@objective_fn, p0, [], [], [], [], lb, ub, @constraint_fn, options);
 
-   
+% --- Recompute model implied vols at optimal parameters ---
+phi_opt              = Levy_Model_Char_Func(alpha, opt_params(1), opt_params(2), opt_params(3), dt);
+[fft_prices_opt, fft_x_grid_opt, ~] = Lewis_FFT_pricer(phi_opt, F0, B, M, dz, x1, z1);
+model_prices_opt     = interp1(fft_x_grid_opt, fft_prices_opt, mkt_log_mon, 'spline');
+model_implied_vol    = blkimpv(F0, mkt_strikes, 0, 1, model_prices_opt / B);
+
 % Helper Functions
 
 function error_val = objective_fn(p)
@@ -50,7 +55,7 @@ phi = Levy_Model_Char_Func(alpha, sigma_guess, k_guess, eta_guess, dt);
 % then calibrate the model on real mrk data!
 model_prices = interp1(fft_x_grid, fft_prices, mkt_log_mon, 'spline');
 
-model_implied_vol = blkimpv(F0, mkt_K, 0, T, model_prices / B);
+model_implied_vol = blkimpv(F0, mkt_strikes, 0, 1, model_prices / B);
 error_val = sum((model_implied_vol - mkt_implied_vol).^2);
 end
 
