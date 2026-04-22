@@ -2,10 +2,12 @@ clear all
 close all
 clc
 
-addpath("data\")
-addpath("digital\")
-addpath("pricing_engines\")
-addpath("utilities\")
+addpath("data")
+addpath("digital")
+addpath("pricing_engines")
+addpath("utilities")
+addpath("char_func")
+addpath("calibration")
 %% Part 1
 % Initialize parameters
 params = initCertificateParams();
@@ -61,15 +63,13 @@ parameters = [p_plus, p_minus, mu];
 [C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters);
 
 % FFT (Computed globally for a grid of log-moneyness x)
- M = 12;
- dz = 0.1; 
-%[C_fft_interp, x_fft, C_fft] = executeFFTMethod(x_grid, F0, DF, p_plus, p_minus, mu, M, dz);
-z1= -(2^M-1)*dz/2;
-dx=2*pi/(2^M*dz);
-x1= -(2^M-1)*dx/2;
+M = 12;
+dz = 0.1; 
 phi = ChFuncEx3( p_plus, p_minus, mu);
-[C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz, x1, z1);
+
+[C_fft, x_fft, ~] = Lewis_FFT_pricer(phi, F0, DF, M, dz);
 C_fft_interp = interp1(x_fft, C_fft, x_grid, 'spline');
+
 for i = 1:length(x_grid)
     fprintf('FFT Price at x = %7.2f%%: %8.4f\n', x_grid(i)*100, C_fft_interp(i));
 end
@@ -78,41 +78,20 @@ end
 x_grid = -0.25:0.01:0.25;
 alpha = 1/2; sigma = 0.2; k = 1; eta = 3; dt = 1;
 parameters = [alpha, sigma, k, eta, dt];
-[C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters)
+[C_quad, C_mc] = executePricingMethods2(x_grid, F0, DF, parameters);
 
-[C_fft, x_grid, z_grid] = Lewis_FFT_pricer(phi, F0, B, M, dz, x1, z1)
+[C_fft, x_grid, z_grid] = Lewis_FFT_pricer(phi, F0, B, M, dz);
 %% Part 5
-
-%COMMENT:
-% 1) Compute Call Prices using FFT, which requires:
-%    i) Computing the characteristic function of the model
-%    ii) Computing the integrand of Lewis formula
-%    iii) FFT to compute the final price
-%
-% 2) OLS: we calibrate the model param (k, sigma, n)
-%
-% 3) Model Implied Vol via OLS on Black formula
-%
-% 4) Compare it with Market Data implied vol
-
 %Loading Data
 load('eurostoxx_Poli.mat');
 F0 = cSelect.reference;
 K_vec = cSelect.strikes; sigma_vec = cSelect.surface; T = 1.0;
 alpha = 2/3;
 
-[optimal_param, SSE, model_implied_vol] = Calibrate_NVM_model(K_vec, sigma_vec, F0, 0.8, 1, alpha, 15, -500, ...
-    -102.9343891, 0.006282808);
+% FFT param
+M = 15; dz = 0.006282808;
 
-% Plot
-figure;
-plot(K_vec, sigma_vec * 100, 'bo-', 'LineWidth', 1.5, 'MarkerSize', 6);
-hold on;
-plot(K_vec, model_implied_vol * 100, 'r--', 'LineWidth', 1.5);
-hold off;
+[optimal_param, SSE, model_implied_vol] = Calibrate_NVM_model(K_vec, ...
+    sigma_vec, F0, DF, T, alpha, M, dz);
 
-xlabel('Strike');
-ylabel('Implied Volatility (%)');
-title('NVM Model Calibration');
-legend('Market IV', 'Model IV', 'Location', 'best');
-grid on;
+Implied_Vol_Comparison(K_vec, sigma_vec, model_implied_vol);

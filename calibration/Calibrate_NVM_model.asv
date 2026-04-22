@@ -1,4 +1,4 @@
-function [opt_params, SSE, model_implied_vol] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, x1, z1, dz)
+function [opt_params, SSE, model_implied_vol] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, dz)
 % CALIBRATE_NVM_MODEL Calibrates the NVM model to market prices using fmincon.
 %
 % Returns:
