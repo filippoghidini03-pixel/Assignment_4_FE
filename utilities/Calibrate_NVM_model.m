@@ -31,7 +31,7 @@ disp('Starting Constrained Calibration (fmincon)...');
 
 % --- Recompute model implied vols at optimal parameters ---
 phi_opt              = Levy_Model_Char_Func(alpha, opt_params(1), opt_params(2), opt_params(3), dt);
-[fft_prices_opt, fft_x_grid_opt, ~] = Lewis_FFT_pricer(phi_opt, F0, B, M, dz, x1, z1);
+[fft_prices_opt, fft_x_grid_opt, ~] = Lewis_FFT_pricer(phi_opt, F0, B, M, dz);
 model_prices_opt     = interp1(fft_x_grid_opt, fft_prices_opt, mkt_log_mon, 'spline');
 model_implied_vol    = blkimpv(F0, mkt_strikes, 0, 1, model_prices_opt / B);
 
@@ -47,7 +47,7 @@ eta_guess   = p(3);
 phi = Levy_Model_Char_Func(alpha, sigma_guess, k_guess, eta_guess, dt);
 
 % Price via FFT
-[fft_prices, fft_x_grid, ~] = Lewis_FFT_pricer(phi, F0, B, M, dz, x1, z1);
+[fft_prices, fft_x_grid, ~] = Lewis_FFT_pricer(phi, F0, B, M, dz);
 
 % Interpolate and compute error
 % COMMENT: we built a fft pricing, but not every computed vaues will be

@@ -65,12 +65,9 @@ parameters = [p_plus, p_minus, mu];
  M = 15;
  dz = 0.00628280825805664; 
 
-z1= -(2^M-1)*dz/2;
-dx=2*pi/(2^M*dz);
-x1= -(2^M-1)*dx/2;
 phi = ChFuncEx3( p_plus, p_minus, mu);
 
-[C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz, x1, z1);
+[C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz);
 C_fft_interp = interp1(x_fft, C_fft, x_grid, 'spline');
 
 printPrices(x_grid, C_quad, C_mc, C_fft_interp);
@@ -83,7 +80,7 @@ parameters = [alpha, sigma, k, eta, dt];
 
 phi= Levy_Model_Char_Func(alpha,sigma,k,eta,dt);
 
-[C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz, x1, z1);
+[C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz);
 C_fft_interp = interp1(x_fft, C_fft, x_grid, 'spline');
 
 plotPrices(x_grid, C_quad, C_mc, C_fft_interp)
