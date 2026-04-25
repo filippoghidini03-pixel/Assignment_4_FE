@@ -7,6 +7,7 @@ addpath("digital")
 addpath("pricing_engines")
 addpath("utilities")
 addpath("char_func")
+addpath("plot")
 addpath("calibration")
 %% Part 1
 % Initialize parameters
