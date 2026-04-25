@@ -29,6 +29,7 @@ disp('Starting Constrained Calibration (fmincon)...');
 [opt_params, SSE] = fmincon(@objective_fn, p0, [], [], [], [], lb, ub, @constraint_fn, options);
 
 % --- Recompute model implied vols at optimal parameters ---
+<<<<<<< HEAD:calibration/Calibrate_NVM_model.m
 phi_opt = Levy_Model_Char_Func(alpha, opt_params(1), opt_params(2), opt_params(3), dt);
 [fft_prices_opt, fft_x_grid_opt, ~] = Lewis_FFT_pricer(phi_opt, F0, B, M, dz);
 model_prices_opt = interp1(fft_x_grid_opt, fft_prices_opt, mkt_log_mon, 'spline');
