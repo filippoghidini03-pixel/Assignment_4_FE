@@ -21,17 +21,17 @@ if length(parameters) == 3
         x = x_grid(i);
         K = F0 * exp(-x);
         
-        fprintf('--- Pricing for Moneyness x = %.2f%% (Strike K = %.2f) ---\n', x*100, K);
+        %fprintf('--- Pricing for Moneyness x = %.2f%% (Strike K = %.2f) ---\n', x*100, K);
         
         % a. Quadrature
         C_quad(i) = compute2_Quadrature(x, F0, DF, phi);
-        fprintf('a. Quadrature Price:  %.4f\n', C_quad(i));
+        %fprintf('a. Quadrature Price:  %.4f\n', C_quad(i));
         
         % b. Monte Carlo Simulation
         C_MC(i) = computeI_MonteCarlo(x, F0, DF, K, p_plus, p_minus, mu);
-        fprintf('c. Monte Carlo Price: %.4f\n', C_MC(i));
+        %fprintf('c. Monte Carlo Price: %.4f\n', C_MC(i));
         
-        fprintf('\n');
+        %fprintf('\n');
     end
 end
 if length(parameters) == 5
@@ -47,7 +47,8 @@ if length(parameters) == 5
         C_MC(i) = compute2_MonteCarlo(x, F0, DF, alpha, sigma, k, eta, dt);
     end
     
-    % Plot the prices
+    %{
+     Plot the prices
     figure;
     plot(x_grid, C_quad, '-o', 'LineWidth', 1.5, 'MarkerSize', 8);
     hold on;
@@ -58,6 +59,7 @@ if length(parameters) == 5
     ylabel('Call Option Price');
     title('NIG Model Prices (Quadrature vs Monte Carlo)');
     legend('Quadrature', 'Monte Carlo', 'Location', 'best');
+    %}
 end
 
 

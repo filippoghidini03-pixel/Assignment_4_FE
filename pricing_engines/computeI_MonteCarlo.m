@@ -2,7 +2,7 @@ function C = computeI_MonteCarlo(x, F0, DF, K, p_plus, p_minus, mu)
     % COMPUTEI_MONTECARLO Prices the call option by simulating the specific 
     % probability distribution encoded in the characteristic function.
     
-    N_sim = 1000000; 
+    N_sim = 1e7; 
     
     % The characteristic function represents a random variable X = mu + E1
     % - E2, because we may decompose it into the product of three

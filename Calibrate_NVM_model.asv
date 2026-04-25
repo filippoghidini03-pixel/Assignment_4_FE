@@ -1,4 +1,4 @@
-function [opt_params, SSE] = Calibrate_NVM_model(mkt_strikes, mkt_prices, F0, B, dt, alpha, M, x1, z1, dz)
+function [opt_params, SSE] = Calibrate_NVM_model(mkt_strikes, mkt_prices, F0, B, dt, alpha, M, dz)
 % CALIBRATE_NVM_MODEL Calibrates the NVM model to market prices using fmincon.
 %
 % Returns:
@@ -10,6 +10,8 @@ mkt_log_mon = log(F0 ./ mkt_strikes);
     
 N  = 2^M;
 dx = (2*pi) / (N * dz);
+z1= -(2^M-1)*dz/2;
+x1= -(2^M-1)*dx/2;
 
 % Optimization Setup
 p0 = [0.20, 1.0, -0.1];  % Initial guess: [sigma, k, eta]
@@ -42,7 +44,7 @@ function error_val = objective_fn(p)
     phi = Levy_Model_Char_Func(alpha, sigma_guess, k_guess, eta_guess, dt);
     
     % Price via FFT
-    [fft_prices, fft_x_grid, ~] = Lewis_FFT_pricer(phi, F0, B, M, dz, x1, z1);
+    [fft_prices, fft_x_grid, ~] = Lewis_FFT_pricer(phi, F0, B, M, dz);
     
     % Interpolate and compute error
     % COMMENT: we built a fft pricing, but not every computed vaues will be
