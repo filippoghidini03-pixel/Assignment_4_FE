@@ -23,7 +23,10 @@ function params = initCertificateParams()
     params.Principal = 1;
     params.P = 0.95;
     params.participation = 1.10;
+    params.spread = 0.013;
+    params.paymentsPerYear = 4;
     params.T = 5;
+    params.startDate = datenum('19-Feb-2008');
  
     % Bootstrap the discount curve from market data
     [dataSet, rateSet, ref_date] = getMarketDataStructs('MktData_CurveBootstrap.xls');
@@ -33,15 +36,19 @@ function params = initCertificateParams()
     % so the first year is 366 days; the remaining four are standard 365)
     target_date = ref_date + 366 + 4 * 365;
  
-    % Interpolate the discount factor directly from the bootstrapped curve.
-    % This is more accurate than interpolating zero rates, because discounts
-    % are the primary output of the bootstrap and interpolating them avoids
-    % the additional approximation introduced by converting to rates first.
-    params.DF_T = interp1(dates, discounts, target_date, 'linear', 'extrap');
- 
-    % Derive the continuously compounded zero rate from the discount factor.
-    % We use Act/365 (basis 3) consistent with the option expiry convention.
-    yf = yearfrac(ref_date, target_date, 3);
-    params.r = -log(params.DF_T) / yf;
+    % Interpolate the zero rates
+    yf = yearfrac(ref_date, dates, 3);
+    zero_rates = -log(discounts) ./ yf;
+    params.r = interp1(dates, zero_rates, target_date, 'linear', 'extrap');
+
+    % Derive the Discount Factor
+    yf_targetDate =  yearfrac(ref_date, target_date, 3);
+    params.DF_T = exp (- yf_targetDate * params.r);
+
+    % Saving parameters for next functions
+    params.zero_rates = zero_rates;
+    params.dates = dates;
+    params.ref_date = ref_date;
+
 end
  

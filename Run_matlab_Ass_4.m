@@ -8,6 +8,7 @@ addpath("pricing_engines")
 addpath("utilities")
 addpath("Plot")
 %% Part 1
+
 % Initialize parameters
 params = initCertificateParams();
 
@@ -15,13 +16,16 @@ params = initCertificateParams();
 [F_basket, sigma_basket] = calculateBasket(params);
 
 DF_T = params.DF_T ;
+FloatingPart = 1 - DF_T;
+
+spreadDates = spreadPaymentDates (params.startDate, params.T, params.paymentsPerYear );
+SpreadPart = npv_spread( params.startDate, params.spread, spreadDates, params.dates, params.zero_rates, params.ref_date);
+
 BondPart = (1 - params.P) * DF_T;
+npv_coupon = compute_npv_coupon(F_basket, params.P, sigma_basket, params.T, params.DF_T);
+OptionPart = params.participation * npv_coupon;
 
-[callPrice, ~] = blkprice(F_basket, params.P, params.r, params.T, sigma_basket);
-
-% The option component is the participation multiplied by the call price
-OptionPart = params.participation * callPrice;
-Upfront_X = (1 - BondPart - OptionPart) * 100;
+Upfront_X = (FloatingPart + SpreadPart + BondPart - OptionPart)*100;
 
 fprintf('The calculated Upfront X is: %.4f%%\n', Upfront_X);
 %% Part 2
