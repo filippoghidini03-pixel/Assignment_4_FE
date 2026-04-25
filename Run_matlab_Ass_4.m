@@ -7,6 +7,7 @@ addpath("digital")
 addpath("pricing_engines")
 addpath("utilities")
 addpath("char_func")
+addpath("plot")
 addpath("calibration")
 %% Part 1
 
@@ -86,6 +87,8 @@ phi= Levy_Model_Char_Func(alpha,sigma,k,eta,dt);
 
 [C_fft, x_fft, z_grid] = Lewis_FFT_pricer(phi, F0, DF, M, dz);
 C_fft_interp = interp1(x_fft, C_fft, x_grid, 'spline');
+plotError(x_grid, C_quad, C_fft_interp)
+plotError(x_grid, C_quad, C_mc)
 
 plotPrices(x_grid, C_quad, C_mc, C_fft_interp)
 %% Part 5

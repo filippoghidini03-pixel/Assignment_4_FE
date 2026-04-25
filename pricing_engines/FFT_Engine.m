@@ -6,11 +6,6 @@ dx = 2 * pi / (N * dz);
 x1 = -(N / 2) * dx;
 z1 = -(N / 2) * dz;
 
-% Initialize the output arrays
-f_hat = zeros(1, N);
-x_grid = zeros(1, N);
-z_grid = zeros(1, N);
-
 % Building grids
 idx = (0 : N-1);
 x_grid = x1 + idx .* dx;              
