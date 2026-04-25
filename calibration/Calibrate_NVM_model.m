@@ -1,4 +1,4 @@
-function [opt_params, SSE, model_implied_vol] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, x1, z1, dz)
+function [opt_params, SSE, model_implied_vol] = Calibrate_NVM_model(mkt_strikes, mkt_implied_vol, F0, B, dt, alpha, M, dz)
 % CALIBRATE_NVM_MODEL Calibrates the NVM model to market prices using fmincon.
 %
 % Returns:
@@ -7,9 +7,6 @@ function [opt_params, SSE, model_implied_vol] = Calibrate_NVM_model(mkt_strikes,
 
 % Pre-compute Grid & Market Variables
 mkt_log_mon = log(F0 ./ mkt_strikes);
-    
-N  = 2^M;
-dx = (2*pi) / (N * dz);
 
 % Optimization Setup
 p0 = [0.20, 1.0, -0.1];  % Initial guess: [sigma, k, eta]
@@ -18,7 +15,9 @@ ub = [5.0, 10.0, Inf];   % Upper bounds
 
 options = optimoptions('fmincon', ...
         'Algorithm', 'sqp', ... 
-        'Display', 'iter', ...
+        'Display', 'off', ...
+        'MaxFunctionEvaluations', 2000, ...   
+        'MaxIterations', 1000, ...
         'StepTolerance', 1e-6);
 
 % Run Optimization
@@ -30,10 +29,11 @@ disp('Starting Constrained Calibration (fmincon)...');
 [opt_params, SSE] = fmincon(@objective_fn, p0, [], [], [], [], lb, ub, @constraint_fn, options);
 
 % --- Recompute model implied vols at optimal parameters ---
-phi_opt              = Levy_Model_Char_Func(alpha, opt_params(1), opt_params(2), opt_params(3), dt);
+<<<<<<< HEAD:calibration/Calibrate_NVM_model.m
+phi_opt = Levy_Model_Char_Func(alpha, opt_params(1), opt_params(2), opt_params(3), dt);
 [fft_prices_opt, fft_x_grid_opt, ~] = Lewis_FFT_pricer(phi_opt, F0, B, M, dz);
-model_prices_opt     = interp1(fft_x_grid_opt, fft_prices_opt, mkt_log_mon, 'spline');
-model_implied_vol    = blkimpv(F0, mkt_strikes, 0, 1, model_prices_opt / B);
+model_prices_opt = interp1(fft_x_grid_opt, fft_prices_opt, mkt_log_mon, 'spline');
+model_implied_vol = blkimpv(F0, mkt_strikes, 0, dt, model_prices_opt / B);
 
 % Helper Functions
 
@@ -55,7 +55,9 @@ phi = Levy_Model_Char_Func(alpha, sigma_guess, k_guess, eta_guess, dt);
 % then calibrate the model on real mrk data!
 model_prices = interp1(fft_x_grid, fft_prices, mkt_log_mon, 'spline');
 
-model_implied_vol = blkimpv(F0, mkt_strikes, 0, 1, model_prices / B);
+% COMMENT: weird inputs, but it is just because of how is coded the MATLAB
+% function
+model_implied_vol = blkimpv(F0, mkt_strikes, 0, dt, model_prices / B);
 error_val = sum((model_implied_vol - mkt_implied_vol).^2);
 end
 

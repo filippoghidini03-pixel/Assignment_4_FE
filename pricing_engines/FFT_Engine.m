@@ -1,10 +1,15 @@
-function [f_hat, x_grid, z_grid] = FFT_Engine(integrand, dz, x1, z1, M)
+function [f_hat, x_grid, z_grid] = FFT_Engine(integrand, dz, M)
 
-% N = 2^M
-N = 2.^M;
-
-% dx*dz = 2*pi/N  (enforced)
+% FFT params derivation
+N = 2^M;
 dx = 2 * pi / (N * dz);           
+x1 = -(N / 2) * dx;
+z1 = -(N / 2) * dz;
+
+% Initialize the output arrays
+f_hat = zeros(1, N);
+x_grid = zeros(1, N);
+z_grid = zeros(1, N);
 
 % Building grids
 idx = (0 : N-1);
